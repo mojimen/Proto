@@ -34,32 +34,17 @@ BOOL ClipDataRect::InitClipData(void)
 }
 
 
-BOOL ClipDataRect::InitializeClipId(UUID& uiClipId)
+BOOL ClipDataRect::InitializeClipRectId(UUID& uiClipRectId)
 {
-	if (RPC_S_OK == UuidCreate(&m_uiClipId))
+	if (RPC_S_OK == UuidCreate(&m_uiClipRectId))
 	{
-		uiClipId = m_uiClipId;
-		CreateClipInOutPoint();
+		uiClipRectId = m_uiClipRectId;
 		return TRUE;
 	}
 	else
 	{
 		return FALSE;
 	}
-}
-
-void ClipDataRect::CreateClipInOutPoint()
-{
-	std::random_device rd;
-	std::mt19937 mt(rd());
-	std::uniform_int_distribution<int> In(1, 99999999);
-	std::uniform_int_distribution<int> Dur(1, 99999);
-
-	m_iInPoint = In(mt);
-	m_iDuration = Dur(mt);
-	m_iOutPoint = m_iInPoint + m_iDuration - 1;
-
-	return;
 }
 
 void ClipDataRect::GetOverlappingVert(float(&fVert)[4][3])

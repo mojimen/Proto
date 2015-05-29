@@ -71,7 +71,7 @@ public:
 	virtual ~ClipDataRect();
 
 
-	enum ClipDataRectTag{ ClipDataTagRect };
+	enum ClipDataTag{ CLIPDATARECT };
 	enum ClipKind {
 		VIDEO,
 		AUDIO,
@@ -81,20 +81,20 @@ public:
 	};
 
 private:
-	ClipDataRectTag m_eClipDataRectTag;
-	UUID m_uiClipId;
+	ClipDataTag m_eClipDataRectTag;
+	UUID m_uiClipRectId;
 	ClipKind m_eClipKind;
-	UUID m_uiFileId;
-	int m_iInPoint;
-	int m_iOutPoint;
+	//UUID m_uiFileId;
+	//int m_iInPoint;
+	//int m_iOutPoint;
 	int m_iDuration;
-	int m_iInOffset;
-	UUID m_uiMetaInfoId;
-	std::list<UUID> m_uiVideoLevelPointList;
-	std::list<UUID> m_uiAudioLevelPointList;
-	std::list<UUID> m_uiVALinkList;
+	//int m_iInOffset;
+	//UUID m_uiMetaInfoId;
+	//std::list<UUID> m_uiVideoLevelPointList;
+	//std::list<UUID> m_uiAudioLevelPointList;
+	//std::list<UUID> m_uiVALinkList;
 	BOOL m_fLocked;
-	std::map < int, FilterInfo > m_FilterMap;	//InPoint, FilterInfo 
+	//std::map < int, FilterInfo > m_FilterMap;	//InPoint, FilterInfo 
 
 	// ForView
 	OpenGLRect m_rcOperatingRect;
@@ -108,19 +108,19 @@ private:
 	float m_fSingleTrimBorderColor[4][4];	// 全クリップ共通。コントローラーで設定すべき？
 
 	// For ProtoType
-	CString strFilePath;
+	//CString strFilePath;
 
 public:
 	// TODO: private化
 	int m_iTimelineInPoint;
+	int m_iTimelineOutPoint;
 
 	BOOL InitClipData(void);
-	void CreateClipInOutPoint(void);
 
 
 public:
 
-	BOOL InitializeClipId(UUID& uiClipId);
+	BOOL InitializeClipRectId(UUID& uiClipRectId);
 	void DrawSingleTrimRect(int iHeight, BOOL fInTrim);
 	void DrawMovingRect(int iHeight);
 	void DrawOperatingOldRect(int iHeight);
@@ -128,14 +128,10 @@ public:
 	void InitializeOperatingRect(void) { m_rcOperatingRect.SetRectEmpty(); }
 
 	// Setter
-	void SetTag(ClipDataRectTag eTag) { m_eClipDataRectTag = eTag; }
-	void SetClipId(UUID uiClipId) { m_uiClipId = uiClipId; }
+	void SetTag(ClipDataTag eTag) { m_eClipDataRectTag = eTag; }
+	void SetClipId(UUID uiClipId) { m_uiClipRectId = uiClipId; }
 	void SetClipKind(ClipKind eClipKind) { m_eClipKind = eClipKind; }
-	void SetFileId(UUID uiFileId) { m_uiFileId = uiFileId; }
-	void SetInPoint(int iInPoint) { m_iInPoint = iInPoint; }
-	void SetOutPoint(int iOutPoint) { m_iOutPoint = iOutPoint; }
 	void SetDuration(int iDuration) { m_iDuration = iDuration; }
-	void SetInOffset(int iInOffset) { m_iInOffset = iInOffset; }
 	void SetOperatingRect(const CRect& rcRect) { m_rcOperatingRect.CopyRect(rcRect); }
 	void CopyOperatingRectToOriginalRect(void) { CopyRect(m_rcOperatingRect); m_rcOperatingRect.SetRectEmpty(); }
 	void SetOverlappingVert(const float fLeft, const float fTop, const float fRight, const float fBottom);
@@ -165,14 +161,10 @@ public:
 		const float fR4, const float fG4, const float fB4, const float fA4);
 
 	// Getter
-	ClipDataRectTag GetTag(void) { return m_eClipDataRectTag; }
-	UUID GetClipId(void) { return m_uiClipId; }
+	ClipDataTag GetTag(void) { return m_eClipDataRectTag; }
+	UUID GetClipId(void) { return m_uiClipRectId; }
 	ClipKind GetClipKind(void) { return m_eClipKind; }
-	UUID GetFileId(void) { return m_uiFileId; }
-	int GetInPoint(void) { return m_iInPoint; }
-	int GetOutPoint(void) { return m_iOutPoint; }
 	int GetDuration(void) { return m_iDuration; }
-	int GetInOffset(void) { return m_iInOffset; }
 	CRect* GetOperatingRect(void) { return &m_rcOperatingRect; }
 	float(*GetOverlappingVert(void))[3] { return m_fOverlappingVert; }
 	void GetOverlappingVert(float(&fVert)[4][3]);
