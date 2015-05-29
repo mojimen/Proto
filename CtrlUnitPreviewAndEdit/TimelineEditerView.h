@@ -3,8 +3,9 @@
 #include <map>
 #include "OpenGLView.h"
 
-class ClipDataRect;
 class OpenGLRect;
+class ClipDataRect;
+class TrackDataInfo;
 class TrackDataRect;
 
 typedef std::map<int, int> DisplayScaleMap;
@@ -219,8 +220,12 @@ private:
 	// 仮想トラック
 	TrackDataRect* m_clTrack1;
 	TrackDataRect* m_clTrack2;
+	TrackDataInfo* m_clTrackInfo1;
+	TrackDataInfo* m_clTrackInfo2;
 	TrackDataRect* m_clSelectedTrack;
 	TrackDataRect* m_clOperateToTrack;
+	TrackDataInfo* m_clSelectedTrackInfo;
+	TrackDataInfo* m_clOperateToTrackInfo;
 
 	// 図形ドラッグ用
 private:
@@ -256,7 +261,7 @@ private:
 	void DrawTrackHeader(void);
 	void DrawTrack(void);
 	BOOL DrawClip(const int iHeight);
-	void DrawClipInTrack(TrackDataRect* pTrackData, const int iHeight);
+	void DrawClipInTrack(TrackDataRect* pTrackDataRect, const int iHeight);
 	void DrawTimelineDataRect(void);
 	BOOL DrawOperatingClip(const CDC& dcPaintDC, const int iHeight);
 	BOOL DrawTimelineCursor(const CDC& dcPaintDC, const int iHeight);

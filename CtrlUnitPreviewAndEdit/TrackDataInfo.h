@@ -43,18 +43,30 @@ private:
 	BOOL m_fMuted;
 	BOOL m_fLevelPointRecordable;
 	
+	// ビューとのリンク項目
+	//UUID m_uiTrackRectId;
+	//TrackDataRect* m_pTrackDataRect;
 
 public:
 	BOOL InitTrackData(void);
-	BOOL InitializeClipId(UUID& uiClipId);
-
-	// TODO: まずはクリップが重ならない前提
-	ClipDataRect* GetClipDataInfo(int iFrame, int& iInPoint);
-	int GetClipDataArray(int iStartFrame, int iEndFrame, ClipDataInfoMap& mpClipMap);
+	BOOL InitializeTrackId(UUID& uiClipId);
 
 	void AddClip(const int iInPoint, ClipDataRect* pClipData);
 	void DeleteClip(const int iInPoint);
 	void ChangeClip(const int iOldInPoint, const int iNewInPoint, ClipDataRect* pClipData);
+
+	// Getter
+	// TODO: まずはクリップが重ならない前提
+	ClipDataRect* GetClipDataInfo(int iFrame, int& iInPoint);
+	int GetClipDataArray(int iStartFrame, int iEndFrame, ClipDataInfoMap& mpClipMap);
+	//UUID GetTrackRectId(void) { return m_uiTrackRectId; }
+	//TrackDataRect* GetTrackDataRect(void) { return m_pTrackDataRect; }
+
+	// Setter
+	//void SetTrackRectId(UUID uiTrackRectId) { m_uiTrackRectId = uiTrackRectId; }
+	//void SetTrackDataRect(TrackDataRect* pTrackDataRect) { m_pTrackDataRect = pTrackDataRect; }
+
+
 
 	// TODO: これはコントローラーに！
 	ClipDataRect* CheckMove(ClipDataRect* pCheckClipData, const int iInPoint, const int iOutPoint);

@@ -25,7 +25,7 @@ BOOL TrackDataInfo::InitTrackData(void)
 	return TRUE;
 }
 
-BOOL TrackDataInfo::InitializeClipId(UUID& uiClipId)
+BOOL TrackDataInfo::InitializeTrackId(UUID& uiClipId)
 {
 	if (RPC_S_OK == UuidCreate(&m_uiTrackId))
 	{

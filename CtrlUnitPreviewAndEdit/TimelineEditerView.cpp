@@ -8,6 +8,7 @@
 #include "OpenGLRect.h"
 #include "ClipDataRect.h"
 #include "TrackDataRect.h"
+#include "TrackDataInfo.h"
 //#include "math.h"
 
 #include <map>
@@ -193,12 +194,11 @@ void TimelineEditerView::OnLButtonDown(UINT nFlags, CPoint point)
 	{
 		// トラック判定
 		m_clSelectedTrack = IsPointInAnyTrack(point);
+		m_clSelectedTrackInfo = m_clSelectedTrack->GetTrackDataInfo();
 		if (m_clSelectedTrack != nullptr)
 		{
 			m_clOperateToTrack = m_clSelectedTrack;
-			CString strTrack;
-			strTrack = m_clSelectedTrack->GetTrackName();
-			OutputDebugString(strTrack + "\n");
+			m_clOperateToTrackInfo = m_clSelectedTrackInfo;
 
 			if (IsPointInAnyClipRect(point))
 			{
@@ -343,16 +343,16 @@ void TimelineEditerView::OnLButtonUp(UINT nFlags, CPoint point)
 
 	if (m_fMoving)
 	{
-		m_clSelectedTrack->DeleteClip(m_clMovingClipData->m_iTimelineInPoint);
+		m_clSelectedTrackInfo->DeleteClip(m_clMovingClipData->m_iTimelineInPoint);
 		m_clMovingClipData->m_iTimelineInPoint += m_iOperatingClipFrameCount;
-		m_clOperateToTrack->AddClip(m_clMovingClipData->m_iTimelineInPoint, m_clMovingClipData);
+		m_clOperateToTrackInfo->AddClip(m_clMovingClipData->m_iTimelineInPoint, m_clMovingClipData);
 		m_clMovingClipData->CopyRect(m_clMovingClipData->GetOperatingRect());
 		//TODO: いずれは復活させないといけない－＞移動中はいいけど静止状態の時にトラックからIn点を持ってくるのが難しい！
 		//m_clMovingClipData->m_iTimelineInPoint = 0;
 	}
 	else if (m_fSingleInTriming)
 	{
-		m_clSelectedTrack->ChangeClip(m_clMovingClipData->m_iTimelineInPoint, m_clMovingClipData->m_iTimelineInPoint + m_iOperatingClipFrameCount, m_clMovingClipData);
+		m_clSelectedTrackInfo->ChangeClip(m_clMovingClipData->m_iTimelineInPoint, m_clMovingClipData->m_iTimelineInPoint + m_iOperatingClipFrameCount, m_clMovingClipData);
 		m_clMovingClipData->m_iTimelineInPoint += m_iOperatingClipFrameCount;
 		int iClipDuration = m_clMovingClipData->GetDuration();
 		// In側に伸びる（マイナス方向への移動）は長さを加算
@@ -478,12 +478,7 @@ void TimelineEditerView::OnMouseMove(UINT nFlags, CPoint point)
 			{
 				m_clOperateToTrack = m_clSelectedTrack;
 			}
-
-			// TODO: デバッグ
-			CString strTrack;
-			strTrack = m_clOperateToTrack->GetTrackName();
-			OutputDebugString(strTrack + "\n");
-
+			m_clOperateToTrackInfo = m_clOperateToTrack->GetTrackDataInfo();
 			m_iOperatingClipFrameCount = ChangeOperatingDistanceToTimelineFrames(szMoveSize, m_clMovingClipData->m_iTimelineInPoint);
 			CalcClipRectDisplayPoint(m_rcMousePointRect, m_clMovingClipData, static_cast<CRect>(m_clOperateToTrack), m_iOperatingClipFrameCount);
 			CheckMove(point);
@@ -762,16 +757,16 @@ void TimelineEditerView::DrawTimelineDataRect(void)
 BOOL TimelineEditerView::DrawClip(const int iHeight)
 {
 	//TODO: vectorとかにトラックを押し込んで反復させる
-	TrackDataRect* pTrackData = m_clTrack1;
-	DrawClipInTrack(pTrackData, iHeight);
-	pTrackData = m_clTrack2;
-	DrawClipInTrack(pTrackData, iHeight);
+	TrackDataRect* pTrackDataRect = m_clTrack1;
+	DrawClipInTrack(pTrackDataRect, iHeight);
+	pTrackDataRect = m_clTrack2;
+	DrawClipInTrack(pTrackDataRect, iHeight);
 
 	return TRUE;
 }
 
 // トラック内の表示範囲内クリップをサーチして描画
-void TimelineEditerView::DrawClipInTrack(TrackDataRect* pTrackData, const int iHeight)
+void TimelineEditerView::DrawClipInTrack(TrackDataRect* pTrackDataRect, const int iHeight)
 {
 	int iStartFrame = m_iLeftFrameNumber + m_iOperatingFrameCount;
 	if (iStartFrame < 0)
@@ -779,7 +774,7 @@ void TimelineEditerView::DrawClipInTrack(TrackDataRect* pTrackData, const int iH
 		iStartFrame = 0;
 	}
 	ClipDataInfoMap mpClipDataMap;
-	int iClipCount = pTrackData->GetClipDataArray(iStartFrame, m_iRightFrameNumber + m_iOperatingFrameCount, mpClipDataMap);
+	int iClipCount = pTrackDataRect->GetTrackDataInfo()->GetClipDataArray(iStartFrame, m_iRightFrameNumber + m_iOperatingFrameCount, mpClipDataMap);
 	ClipDataRect* pClipData;
 	if (iClipCount > 0)
 	{
@@ -787,7 +782,7 @@ void TimelineEditerView::DrawClipInTrack(TrackDataRect* pTrackData, const int iH
 		while (itr != mpClipDataMap.end())
 		{
 			pClipData = (*itr).second;
-			CalcClipRectDisplayPoint(static_cast<CRect&>(*pClipData), pClipData, static_cast<CRect>(pTrackData));
+			CalcClipRectDisplayPoint(static_cast<CRect&>(*pClipData), pClipData, static_cast<CRect>(pTrackDataRect));
 			pClipData->SetVert(iHeight);
 			pClipData->DrawMyBothRect(1.0f);
 			++itr;
@@ -1517,10 +1512,10 @@ BOOL TimelineEditerView::IsPointInAnyClipRect(const CPoint& point)
 	// TODO: マイナスを返すパターンも必要
 	int iFrame;
 	ChangeDisplayPointToTimelineFramePosition(point, iFrame);
-	if ((m_clSelectedTrack != nullptr) && (iFrame >= 0))
+	if ((m_clSelectedTrack != nullptr) && (m_clSelectedTrackInfo != nullptr) && (iFrame >= 0))
 	{
 		int iInPoint = 0;
-		m_clMovingClipData = m_clSelectedTrack->GetClipDataInfo(iFrame, iInPoint);
+		m_clMovingClipData = m_clSelectedTrackInfo->GetClipDataInfo(iFrame, iInPoint);
 		if (m_clMovingClipData != nullptr)
 		{
 			if (IsPointInClipRect(point, static_cast<CRect&>(*m_clMovingClipData)))
@@ -1634,7 +1629,7 @@ BOOL TimelineEditerView::CheckInTrim(void)
 	// 重なりチェック
 	// TODO: In点の場所にクリップがあるかをサーチする。
 	int iOutPoint;
-	ClipDataRect* pClipData = m_clOperateToTrack->GetClipDataInfo(m_clMovingClipData->m_iTimelineInPoint + m_iOperatingClipFrameCount, iOutPoint);
+	ClipDataRect* pClipData = m_clOperateToTrackInfo->GetClipDataInfo(m_clMovingClipData->m_iTimelineInPoint + m_iOperatingClipFrameCount, iOutPoint);
 	if ((pClipData != nullptr) && (pClipData != m_clMovingClipData))
 	{
 		iOutPoint = iOutPoint + pClipData->GetDuration() - 1;
@@ -1667,7 +1662,7 @@ BOOL TimelineEditerView::CheckOutTrim(void)
 	// 重なりチェック
 	// TODO: Out点の場所にクリップがあるかをサーチする。
 	int iInPoint;
-	ClipDataRect* pClipData = m_clOperateToTrack->GetClipDataInfo(m_clMovingClipData->m_iTimelineInPoint + iDuration - 1 + m_iOperatingClipFrameCount, iInPoint);
+	ClipDataRect* pClipData = m_clOperateToTrackInfo->GetClipDataInfo(m_clMovingClipData->m_iTimelineInPoint + iDuration - 1 + m_iOperatingClipFrameCount, iInPoint);
 	if ((pClipData != nullptr) && (pClipData != m_clMovingClipData))
 	{
 		m_iOperatingClipFrameCount = iInPoint - (m_clMovingClipData->m_iTimelineInPoint + iDuration);
@@ -1692,7 +1687,7 @@ BOOL TimelineEditerView::CheckMove(CPoint& point)
 	int iMovingClipInFrame = m_clMovingClipData->m_iTimelineInPoint + m_iOperatingClipFrameCount;
 	int iMovingClipOutFrame = m_clMovingClipData->m_iTimelineInPoint + m_clMovingClipData->GetDuration() - 1 + m_iOperatingClipFrameCount;
 	ClipDataRect* pClipData;
-	pClipData = m_clOperateToTrack->CheckMove(m_clMovingClipData, iMovingClipInFrame, iMovingClipOutFrame);
+	pClipData = m_clOperateToTrackInfo->CheckMove(m_clMovingClipData, iMovingClipInFrame, iMovingClipOutFrame);
 	if ((pClipData != nullptr) && (pClipData != m_clMovingClipData))
 	{
 		// TODO: m_iTimelineInPoint使って大丈夫か？
@@ -1765,23 +1760,27 @@ void TimelineEditerView::InitTestObject(void)
 	m_clTrack1->InitTrackData();
 	m_clTrack1->SetHeight(kTrackDefaultHeight);
 	m_clTrack1->SetTrackName(_T("Track1"));
+	m_clTrackInfo1 = new TrackDataInfo();
+	m_clTrack1->SetTrackDataInfo(m_clTrackInfo1);
 
 	m_clTrack2 = new TrackDataRect();
 	m_clTrack2->InitTrackData();
 	m_clTrack2->SetHeight(kTrackDefaultHeight);
 	m_clTrack2->SetTrackName(_T("Track2"));
+	m_clTrackInfo2 = new TrackDataInfo();
+	m_clTrack2->SetTrackDataInfo(m_clTrackInfo2);
 
 	m_clClipData1 = new ClipDataRect();
 	m_clClipData1->InitClipData();
 	m_clClipData1->m_iTimelineInPoint = 101;
 	m_clClipData1->SetDuration(10);
-	m_clTrack1->AddClip(m_clClipData1->m_iTimelineInPoint, m_clClipData1);
+	m_clTrackInfo1->AddClip(m_clClipData1->m_iTimelineInPoint, m_clClipData1);
 
 	m_clClipData2 = new ClipDataRect();
 	m_clClipData2->InitClipData();
 	m_clClipData2->m_iTimelineInPoint = 600;
 	m_clClipData2->SetDuration(100);
-	m_clTrack1->AddClip(m_clClipData2->m_iTimelineInPoint, m_clClipData2);
+	m_clTrackInfo1->AddClip(m_clClipData2->m_iTimelineInPoint, m_clClipData2);
 
 }
 

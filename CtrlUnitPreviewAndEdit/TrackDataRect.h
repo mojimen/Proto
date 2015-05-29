@@ -39,12 +39,10 @@
 #define TIMELINETRACKBORDERCOLOR_BRUSH2_FLOAT ACCENTCOLOR2_ALPHA1_BRUSH_FLOAT
 
 
-class ClipDataRect;
+class TrackDataInfo;
 
 // TrackDataRect コマンド ターゲット
 
-typedef std::map<int, ClipDataRect*> ClipDataInfoMap;	//InPoint,ClipId 
-//typedef std::map<int, UUID> ClipDataInfoMap;	//InPoint,ClipId 
 
 class TrackDataRect : public OpenGLRect
 {
@@ -52,7 +50,7 @@ public:
 	TrackDataRect();
 	virtual ~TrackDataRect();
 
-	enum TrackDataInfoTag{ TRACKDATAINFO };
+	enum TrackDataTag{ TRACKDATARECT };
 	enum TrackKind {
 		VIDEO,
 		AUDIO,
@@ -63,43 +61,43 @@ public:
 	};
 
 private:
-	TrackDataInfoTag m_eTrackDataInfoTag;
-	UUID m_uiTrackId;
-	TrackKind m_eTrackKind;
+	TrackDataTag m_eTrackDataInfoTag;
+	UUID m_uiTrackRectId;
 	CString m_strTrackName;
-	UUID m_uiInputChannel;
-	UUID m_uiOutputChannel;
-	ClipDataInfoMap m_mpClipDataInfoMap;
+	int m_iHeight;
 
-	// 再生時参照項目
-	BOOL m_fSolo;
-	BOOL m_fAudioRecordable;
-	BOOL m_fMuted;
-	BOOL m_fLevelPointRecordable;
 	// 編集時参照項目
 	BOOL m_fLocked;
 	BOOL m_fGapless;
 	// 画面表示参照項目
 	BOOL m_fDisplayOverlay;
 	BOOL m_fDisplayLevelPoint;
-	int m_iHeight;
 
+	// データとのリンク項目
+	UUID m_uiTrackId;
+	TrackDataInfo* m_pTrackDataInfo;
 
 public:
 	BOOL InitTrackData(void);
 	BOOL InitializeTrackRectId(UUID& uiClipId);
 
+	// Getter
 	int GetHeight(void) { return m_iHeight; }
 	PCTSTR GetTrackName(void) { return static_cast<PCTSTR>(m_strTrackName); }
-	// TODO: まずはクリップが重ならない前提
-	ClipDataRect* GetClipDataInfo(int iFrame, int& iInPoint);
-	int GetClipDataArray(int iStartFrame, int iEndFrame, ClipDataInfoMap& mpClipMap);
+	UUID GetTrackId(void) { return m_uiTrackId; }
+	TrackDataInfo* GetTrackDataInfo(void) { return m_pTrackDataInfo; }
+	//// TODO: まずはクリップが重ならない前提
+	//ClipDataRect* GetClipDataInfo(int iFrame, int& iInPoint);
+	//int GetClipDataArray(int iStartFrame, int iEndFrame, ClipDataInfoMap& mpClipMap);
 
+	// Setter
 	void SetTrackName(PCTSTR pszTrackName) { m_strTrackName = static_cast<CString>(pszTrackName); }
 	void SetHeight(int iHeight) { m_iHeight = iHeight; }
-	void AddClip(const int iInPoint, ClipDataRect* pClipData);
-	void DeleteClip(const int iInPoint);
-	void ChangeClip(const int iOldInPoint, const int iNewInPoint, ClipDataRect* pClipData);
-	ClipDataRect* CheckMove(ClipDataRect* pCheckClipData, const int iInPoint, const int iOutPoint);
+	void SetTrackId(UUID uiTrackId) { m_uiTrackId = uiTrackId; }
+	void SetTrackDataInfo(TrackDataInfo* pTrackDataInfo) { m_pTrackDataInfo = pTrackDataInfo; }
+	//void AddClip(const int iInPoint, ClipDataRect* pClipData);
+	//void DeleteClip(const int iInPoint);
+	//void ChangeClip(const int iOldInPoint, const int iNewInPoint, ClipDataRect* pClipData);
+	//ClipDataRect* CheckMove(ClipDataRect* pCheckClipData, const int iInPoint, const int iOutPoint);
 
 };
