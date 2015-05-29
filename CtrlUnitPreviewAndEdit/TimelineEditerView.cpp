@@ -774,8 +774,10 @@ void TimelineEditerView::DrawClipInTrack(TrackDataRect* pTrackDataRect, const in
 		iStartFrame = 0;
 	}
 	ClipDataInfoMap mpClipDataMap;
-	int iClipCount = pTrackDataRect->GetTrackDataInfo()->GetClipDataArray(iStartFrame, m_iRightFrameNumber + m_iOperatingFrameCount, mpClipDataMap);
+	int iClipCount = pTrackDataRect->GetTrackDataInfo()->GetClipDataInRange(iStartFrame, m_iRightFrameNumber + m_iOperatingFrameCount, mpClipDataMap);
 	ClipDataRect* pClipData;
+	ClipDataRect* pClipDataLeft;
+	pClipDataLeft = nullptr;
 	if (iClipCount > 0)
 	{
 		ClipDataInfoMap::iterator itr = mpClipDataMap.begin();
@@ -784,7 +786,27 @@ void TimelineEditerView::DrawClipInTrack(TrackDataRect* pTrackDataRect, const in
 			pClipData = (*itr).second;
 			CalcClipRectDisplayPoint(static_cast<CRect&>(*pClipData), pClipData, static_cast<CRect>(pTrackDataRect));
 			pClipData->SetVert(iHeight);
-			pClipData->DrawMyBothRect(1.0f);
+			pClipData->DrawMyFillRect();
+			if (pClipDataLeft != nullptr)
+			{
+				// トランジション部分塗り替え
+				if (pClipData->left < pClipDataLeft->right)
+				{
+					m_prcTransisionRect->CopyRect(pClipData);
+					m_prcTransisionRect->right = pClipDataLeft->right;
+					m_prcTransisionRect->SetVert(iHeight);
+					m_prcTransisionRect->DrawMyFillRect();
+					m_prcTransisionRect->DrawMyLeftLine(1.0f);
+					m_prcTransisionRect->DrawMyRightLine(1.0f);
+					m_prcTransisionRect->SetRectEmpty();
+
+				}
+				else if (pClipData->left == pClipDataLeft->right)
+				{
+					pClipDataLeft->DrawMyRightLine(1.0f);
+				}
+			}
+			pClipDataLeft = pClipData;
 			++itr;
 		}
 	}
@@ -1515,12 +1537,29 @@ BOOL TimelineEditerView::IsPointInAnyClipRect(const CPoint& point)
 	if ((m_clSelectedTrack != nullptr) && (m_clSelectedTrackInfo != nullptr) && (iFrame >= 0))
 	{
 		int iInPoint = 0;
-		m_clMovingClipData = m_clSelectedTrackInfo->GetClipDataInfo(iFrame, iInPoint);
+		ClipDataInfoMap mpClipMap;
+		int iSize = m_clSelectedTrackInfo->GetClipDataAtFrame(iFrame, mpClipMap);
+		if (iSize == 0)
+		{
+			m_clMovingClipData = nullptr;
+		}
+		else if (iSize == 1)
+		{
+			ClipDataInfoMap::iterator itr = mpClipMap.begin();
+			m_clMovingClipData = (*itr).second;
+		}
+		else
+		{
+			ClipDataInfoMap::iterator itr = mpClipMap.begin();
+			++itr;
+			m_clMovingClipData = (*itr).second;
+		}
+
 		if (m_clMovingClipData != nullptr)
 		{
 			if (IsPointInClipRect(point, static_cast<CRect&>(*m_clMovingClipData)))
 			{
-				m_clMovingClipData->m_iTimelineInPoint = iInPoint;
+				//m_clMovingClipData->m_iTimelineInPoint = iInPoint;
 				CalcClipRectDisplayPoint(static_cast<CRect>(m_clMovingClipData), m_clMovingClipData, static_cast<CRect>(m_clSelectedTrack));
 			}
 			if (m_clMovingClipData == m_clClipData1)
@@ -1628,12 +1667,10 @@ BOOL TimelineEditerView::CheckInTrim(void)
 
 	// 重なりチェック
 	// TODO: In点の場所にクリップがあるかをサーチする。
-	int iOutPoint;
-	ClipDataRect* pClipData = m_clOperateToTrackInfo->GetClipDataInfo(m_clMovingClipData->m_iTimelineInPoint + m_iOperatingClipFrameCount, iOutPoint);
-	if ((pClipData != nullptr) && (pClipData != m_clMovingClipData))
+	m_iOperatingClipFrameCount = m_clOperateToTrackInfo->CheckClipInSingleInTrimRange(m_clMovingClipData->m_iTimelineInPoint, m_clMovingClipData->m_iTimelineInPoint + m_iOperatingClipFrameCount)
+		- m_clMovingClipData->m_iTimelineInPoint;
+	if (m_iOperatingClipFrameCount == 0)
 	{
-		iOutPoint = iOutPoint + pClipData->GetDuration() - 1;
-		m_iOperatingClipFrameCount = iOutPoint - m_clMovingClipData->m_iTimelineInPoint + 1;
 		return FALSE;
 	}
 
@@ -1660,12 +1697,10 @@ BOOL TimelineEditerView::CheckOutTrim(void)
 	}
 
 	// 重なりチェック
-	// TODO: Out点の場所にクリップがあるかをサーチする。
-	int iInPoint;
-	ClipDataRect* pClipData = m_clOperateToTrackInfo->GetClipDataInfo(m_clMovingClipData->m_iTimelineInPoint + iDuration - 1 + m_iOperatingClipFrameCount, iInPoint);
-	if ((pClipData != nullptr) && (pClipData != m_clMovingClipData))
+	int iStartFrame = m_clMovingClipData->m_iTimelineInPoint + iDuration - 1;
+	m_iOperatingClipFrameCount = m_clOperateToTrackInfo->CheckClipInSingleOutTrimRange(iStartFrame, iStartFrame + m_iOperatingClipFrameCount) - iStartFrame;
+	if (m_iOperatingClipFrameCount == 0)
 	{
-		m_iOperatingClipFrameCount = iInPoint - (m_clMovingClipData->m_iTimelineInPoint + iDuration);
 		return FALSE;
 	}
 
@@ -1690,7 +1725,6 @@ BOOL TimelineEditerView::CheckMove(CPoint& point)
 	pClipData = m_clOperateToTrackInfo->CheckMove(m_clMovingClipData, iMovingClipInFrame, iMovingClipOutFrame);
 	if ((pClipData != nullptr) && (pClipData != m_clMovingClipData))
 	{
-		// TODO: m_iTimelineInPoint使って大丈夫か？
 		int iStaticClipCenterFrame = pClipData->m_iTimelineInPoint + static_cast<int>(floor(pClipData->GetDuration() / 2));
 		int iDropInPoint = 0;
 		if (iMovingClipInFrame <= iStaticClipCenterFrame)
@@ -1750,6 +1784,11 @@ void TimelineEditerView::InitAreaRect(void)
 
 	m_prcTimelineCursorHitArea = new OpenGLRect();
 	m_prcTimelineCursorHitArea->SetRectEmpty();
+
+	m_prcTransisionRect = new OpenGLRect();
+	m_prcTransisionRect->SetRectEmpty();
+	m_prcTransisionRect->SetColor(ACCENTCOLOR4_BRUSH_FLOAT, ACCENTCOLOR3_BRUSH_FLOAT, ACCENTCOLOR4_BRUSH_FLOAT, ACCENTCOLOR3_BRUSH_FLOAT);
+	m_prcTransisionRect->SetBorderColor(LIGHTGRAYCOLOR3_BRUSH_FLOAT, LIGHTGRAYCOLOR3_BRUSH_FLOAT, LIGHTGRAYCOLOR3_BRUSH_FLOAT, LIGHTGRAYCOLOR3_BRUSH_FLOAT);
 }
 
 // 動作確認用オブジェクトの初期設定

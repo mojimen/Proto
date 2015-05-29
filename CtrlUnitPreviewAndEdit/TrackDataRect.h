@@ -86,18 +86,11 @@ public:
 	PCTSTR GetTrackName(void) { return static_cast<PCTSTR>(m_strTrackName); }
 	UUID GetTrackId(void) { return m_uiTrackId; }
 	TrackDataInfo* GetTrackDataInfo(void) { return m_pTrackDataInfo; }
-	//// TODO: まずはクリップが重ならない前提
-	//ClipDataRect* GetClipDataInfo(int iFrame, int& iInPoint);
-	//int GetClipDataArray(int iStartFrame, int iEndFrame, ClipDataInfoMap& mpClipMap);
 
 	// Setter
 	void SetTrackName(PCTSTR pszTrackName) { m_strTrackName = static_cast<CString>(pszTrackName); }
 	void SetHeight(int iHeight) { m_iHeight = iHeight; }
 	void SetTrackId(UUID uiTrackId) { m_uiTrackId = uiTrackId; }
 	void SetTrackDataInfo(TrackDataInfo* pTrackDataInfo) { m_pTrackDataInfo = pTrackDataInfo; }
-	//void AddClip(const int iInPoint, ClipDataRect* pClipData);
-	//void DeleteClip(const int iInPoint);
-	//void ChangeClip(const int iOldInPoint, const int iNewInPoint, ClipDataRect* pClipData);
-	//ClipDataRect* CheckMove(ClipDataRect* pCheckClipData, const int iInPoint, const int iOutPoint);
 
 };

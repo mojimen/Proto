@@ -47,6 +47,10 @@
 #define CLIPCOLOR_SINGLEINTRIMING_BRUSH_FLOAT ACCENTCOLOR_HALFALPHA_BRUSH_FLOAT
 #define CLIPCOLOR_SINGLEOUTTRIMING_BRUSH_FLOAT ACCENTCOLOR_HALFALPHA_BRUSH_FLOAT
 #define CLIPCOLOR_OVERLAPPING_BRUSH_FLOAT 1.0f, 0.0f, 0.0f, 0.2f
+#define CLIPCOLOR_SINGLETRIMINGBORDER_BRUSH_FLOAT 1.0f, 0.7f, 0.3f, 0.7f
+
+// 固定値
+#define SINGLETRIMINGBORDER_WIDTH 10
 
 
 // ClipDataRect コマンド ターゲット
@@ -94,12 +98,14 @@ private:
 
 	// ForView
 	OpenGLRect m_rcOperatingRect;
+	OpenGLRect m_rcOperatingBorderRect;
 	float m_fOverlappingVert[4][3];
 	float m_fMovingColor[4][4];			// 全クリップ共通。コントローラーで設定すべき？
 	float m_fSingleInTrimColor[4][4];	// 全クリップ共通。コントローラーで設定すべき？
 	float m_fSingleOutTrimColor[4][4];	// 全クリップ共通。コントローラーで設定すべき？
 	float m_fOperatingOldColor[4][4];	// 全クリップ共通。コントローラーで設定すべき？
 	float m_fOverlappingColor[4][4];	// 全クリップ共通。コントローラーで設定すべき？
+	float m_fSingleTrimBorderColor[4][4];	// 全クリップ共通。コントローラーで設定すべき？
 
 	// For ProtoType
 	CString strFilePath;
@@ -153,6 +159,10 @@ public:
 		const float fR2, const float fG2, const float fB2, const float fA2,
 		const float fR3, const float fG3, const float fB3, const float fA3,
 		const float fR4, const float fG4, const float fB4, const float fA4);
+	void SetSingleTrimBorderColor(const float fR1, const float fG1, const float fB1, const float fA1,
+		const float fR2, const float fG2, const float fB2, const float fA2,
+		const float fR3, const float fG3, const float fB3, const float fA3,
+		const float fR4, const float fG4, const float fB4, const float fA4);
 
 	// Getter
 	ClipDataRectTag GetTag(void) { return m_eClipDataRectTag; }
@@ -171,6 +181,7 @@ public:
 	void GetSingleOutTrimColor(float(&fColor)[4][4]);
 	void GetOperatingOldColor(float(&fColor)[4][4]);
 	void GetOverlappingColor(float(&fColor)[4][4]);
+	void GetSingleTrimBorderColor(float(&fColor)[4][4]);
 
 
 

@@ -73,7 +73,7 @@ private:
 #define ACCENTCOLOR2_HALFALPHA_BRUSH_FLOAT 0.3f,0.4f,1.0f,0.5f
 #define ACCENTCOLOR2_ALPHA1_BRUSH_FLOAT 0.3f,0.4f,1.0f,0.7f
 #define ACCENTCOLOR3_BRUSH_FLOAT 0.8f,0.9f,1.0f,1.0f
-	//#define ACCENTCOLOR_BRUSH4 RGB(51,255,255)
+#define ACCENTCOLOR4_BRUSH_FLOAT 0.5f,0.8f,1.0f,1.0f
 
 #define BASECOLOR_BRUSH_FLOAT WHITECOLOR_BRUSH_FLOAT
 #define CAUTIONCOLOR_BRUSH_FLOAT REDCOLOR_BRUSH_FLOAT
@@ -141,7 +141,7 @@ private:
 	const int kSplitterHeight = 5;					// スプリッタの幅
 	const double kSlideTrimAreaRate = 0.1;			// スライドトリムエリアとして使用する比率
 	const double kTrimAreaRate = 0.2;				// トリムエリアとして使用する比率
-	const int kClipHitCheckMinWidth = 10;			// クリップ当たり判定の最小保証幅（これよりクリップが短い場合に使用する幅）
+	const int kClipHitCheckMinWidth = 15;			// クリップ当たり判定の最小保証幅（これよりクリップが短い場合に使用する幅）
 	const int kTrimHitCheckMinWidth = 5;			// トリムチェックで使用する最小幅（これよりトリムチェック範囲が短い場合に使用する幅）
 	const int kTrimHitCheckMaxWidth = 30;			// トリムチェックで使用する最大幅（これよりトリムチェック範囲が長い場合に使用する幅）
 	const int kPreviewPanelDefaltHeight = 300;		// 未使用になる
@@ -178,6 +178,7 @@ private:
 	OpenGLRect* m_prcTrackHeaderRect;
 	OpenGLRect* m_prcTimelineDataRect;
 	OpenGLRect* m_prcTimelineCursorHitArea;
+	OpenGLRect* m_prcTransisionRect;
 
 	int m_iTimelineCursorFramePosition;	// タイムラインカーソル位置のフレーム番号
 	int m_iLeftFrameNumber;				// タイムラインデータ表示範囲の先頭フレーム

@@ -51,14 +51,15 @@ public:
 	BOOL InitTrackData(void);
 	BOOL InitializeTrackId(UUID& uiClipId);
 
+
 	void AddClip(const int iInPoint, ClipDataRect* pClipData);
 	void DeleteClip(const int iInPoint);
 	void ChangeClip(const int iOldInPoint, const int iNewInPoint, ClipDataRect* pClipData);
 
 	// Getter
-	// TODO: まずはクリップが重ならない前提
 	ClipDataRect* GetClipDataInfo(int iFrame, int& iInPoint);
-	int GetClipDataArray(int iStartFrame, int iEndFrame, ClipDataInfoMap& mpClipMap);
+	int GetClipDataAtFrame(int iFrame, ClipDataInfoMap& mpClipMap);
+	int GetClipDataInRange(int iStartFrame, int iEndFrame, ClipDataInfoMap& mpClipMap);
 	//UUID GetTrackRectId(void) { return m_uiTrackRectId; }
 	//TrackDataRect* GetTrackDataRect(void) { return m_pTrackDataRect; }
 
@@ -68,7 +69,9 @@ public:
 
 
 
-	// TODO: これはコントローラーに！
+	// TODO: これはコントローラーに？
+	int CheckClipInSingleOutTrimRange(int iStartFrame, int iEndFrame);
+	int CheckClipInSingleInTrimRange(int iStartFrame, int iEndFrame);
 	ClipDataRect* CheckMove(ClipDataRect* pCheckClipData, const int iInPoint, const int iOutPoint);
 
 };
